@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 
 public class PlayerTestCamera : MonoBehaviour
 {
@@ -13,6 +15,9 @@ public class PlayerTestCamera : MonoBehaviour
 
     [Header("Rotation")]
     [SerializeField] float rotationSpeed = 10;
+
+    [Header("Player itself")]
+    [SerializeField] GameObject playerHimSelf;
 
     [Header("Max Stats")]
     [SerializeField] int maxLifes = 3;
@@ -50,13 +55,29 @@ public class PlayerTestCamera : MonoBehaviour
     [SerializeField] int purpleCoins = 0;
     [SerializeField] int greenCoins = 0;
 
-     [Header("Heal Collect Sounds")]
+    [Header("Heal Collect Sounds")]
     [SerializeField] AudioClip healPickup;
     [SerializeField] AudioSource healAudioSource;
     
     [Range(0,1)]
     [SerializeField] float medkitPitchRange = 0.2f; 
     [SerializeField] AudioMixerGroup medkitAudioMixerGroup;
+
+    [Header("Pain Sounds")]
+    [SerializeField] AudioClip painArea;
+    [SerializeField] AudioSource painAudioSource;
+    
+    [Range(0,1)]
+    [SerializeField] float painPitchRange = 0.2f; 
+    [SerializeField] AudioMixerGroup painAudioMixerGroup;
+
+    [Header("Flashlight")]
+    [SerializeField] Light2D Flashligth;
+    [SerializeField] Light2D Surrounding;
+
+    [Header("respawn Coordenates")]
+    [SerializeField] float xCords;
+    [SerializeField] float yCords;
 
 
 
@@ -66,20 +87,13 @@ public class PlayerTestCamera : MonoBehaviour
         greenCoins = PlayerPrefs.GetInt("GreenCoins", 0);
         purpleCoins = PlayerPrefs.GetInt("PurpleCoins", 0);
 
+        //lifes = maxLifes;
+        //lungCapacity = maxLungCapacity;
+        //jumps = maxJumps;
+
         //purpleCoins = recoverPurpleCoins;
         //greenCoins = recoverGreenCoins;
 
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void AimAtMouse(Transform targetTransform){
@@ -105,7 +119,7 @@ public class PlayerTestCamera : MonoBehaviour
         //this movement is kinda of like glading on ice
         rb.AddForce(movement * speed); 
     }
-
+           
     public void Walk(Vector3 movement){
         rb.velocity = movement * speed;
     }
@@ -126,11 +140,38 @@ public class PlayerTestCamera : MonoBehaviour
 
         if(other.CompareTag("MedKit")){
             medkitPickupSound();
-            heal(1);
+            if(getLifes() + 1 <= maxLifes){
+                heal(1);
+            }
+        }
+
+        if(other.CompareTag("Door")){
+            
+            string[] levelNames = {"Area1", "Area2", "Area3"};
+            int index = PlayerPrefs.GetInt("Level", 0) + 1;
+            if(index >= 3){  //meaning we are in the last level
+                index = 0;
+            }
+        PlayerPrefs.SetInt("Level", index);
+        SceneManager.LoadScene(levelNames[index]);
+    
         }
 
         if(other.CompareTag("KillZone")){
-            //do something
+            //make some ouch noice
+            painSound();
+            //if lifes -1 > 0 then go back to respanw
+            if(lifes>1){
+                //go back to respanw coords
+                lifes -=1;
+                Vector3 currPosition = transform.position;
+                currPosition.x = xCords;
+                currPosition.y = yCords;
+
+                playerHimSelf.transform.position = currPosition;
+            }else{
+                //back to main menu
+            }
         }
     }
 
@@ -233,6 +274,13 @@ public class PlayerTestCamera : MonoBehaviour
         healAudioSource.Play();
     }
 
+    void painSound(){
+        painAudioSource.clip = painArea;
+        painAudioSource.outputAudioMixerGroup = painAudioMixerGroup;
+        painAudioSource.pitch = Random.Range(1f-painPitchRange, 1f+painPitchRange);
+        painAudioSource.Play();
+    }
+
     public int[] getCoins(){
         int[] arr = {greenCoins, purpleCoins};
         return arr;
@@ -240,6 +288,30 @@ public class PlayerTestCamera : MonoBehaviour
 
     public int getMaxLifes(){
         return maxLifes;
+    }
+
+    public Light2D getFlashlight(){
+        return Flashligth;
+    }
+
+    public Light2D getSurrounding(){
+        return Surrounding;
+    }
+
+    public void addMaxLifes(int maxlifes){
+        maxLifes += maxlifes;
+    }
+
+    public void addMaxLung(float lung){
+        maxLungCapacity += lung;
+    }
+
+    public void addMaxJump(int jump){
+        maxJumps += jump;
+    }
+
+    public void addRecoveryEff(float recovery){
+        recoverEfficiency +=recovery;
     }
 
 }

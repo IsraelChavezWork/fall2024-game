@@ -18,8 +18,8 @@ public class ShowCoins : MonoBehaviour
     {
         int greenCoins = player.GetPlayer().getCoins()[0];
         int prupleCoins = player.GetPlayer().getCoins()[1];
-        string text = "Green Coins: " + greenCoins.ToString() + "\n";
-        text += "Purple Coins: " + prupleCoins.ToString();
+        string text = greenCoins.ToString() + "\n\n" + prupleCoins.ToString();
+        
         coinsText.text = text;
     }
 }

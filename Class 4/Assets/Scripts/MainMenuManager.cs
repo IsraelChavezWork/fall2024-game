@@ -20,6 +20,6 @@ public class MainMenuManager : MonoBehaviour
     }
 
     public void StartStory(){
-        SceneManager.LoadScene("LightTesting");
+        SceneManager.LoadScene("Area1");
     }
 }

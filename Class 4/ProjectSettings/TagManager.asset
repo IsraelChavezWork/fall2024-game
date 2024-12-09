@@ -10,6 +10,7 @@ TagManager:
   - PurpleCoin
   - KillZone
   - MedKit
+  - Door
   layers:
   - Default
   - TransparentFX
